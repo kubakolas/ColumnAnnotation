@@ -50,11 +50,24 @@ public class Main {
     static List<String> annotateColumn(String tableName, String columnId) {
         List<String> columnItems = getColumnItems(tableName, columnId);
 
-        // TODO
+        ParameterizedSparqlString qs = new ParameterizedSparqlString(""
+                + "PREFIX dbr:     <http://dbpedia.org/resource/>\n"
+                + "PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+                + "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>"
+                + "\n"
+                + "SELECT DISTINCT ?c WHERE {\n"
+                + "  dbr:The_Godfather rdf:type ?c.\n"
+                + "  ?x rdfs:subClassOf* ?c.\n"
+                + "  FILTER CONTAINS(?c, \"ontology\")}");
+        QueryExecution exec = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", qs.asQuery());
+        ResultSet results = exec.execSelect();
+        while (results.hasNext()) {
+            System.out.println(results.next().get("c").toString());
+        }
+        ResultSetFormatter.out(results);
 
-        // annotate
-        // return annotations as list of strings
-        return new ArrayList<>();
+        List<String> columnAnnotations = new ArrayList<>();
+        return columnAnnotations;
     }
 
     static List<String> getColumnItems(String tableName, String columnId) {
@@ -84,21 +97,4 @@ public class Main {
         }
         return output;
     }
-
-    // sample query to DBPedia
-
-    //        ParameterizedSparqlString qs = new ParameterizedSparqlString(""
-    //                + "prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#>\n"
-    //                + "PREFIX dbo:     <http://dbpedia.org/ontology/>"
-    //                + "\n"
-    //                + "select distinct ?resource ?abstract where {\n"
-    //                + "  ?resource rdfs:label 'Ibuprofen'@en.\n"
-    //                + "  ?resource dbo:abstract ?abstract.\n"
-    //                + "  FILTER (lang(?abstract) = 'en')}");
-    //        QueryExecution exec = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", qs.asQuery());
-    //        ResultSet results = exec.execSelect();
-    //        while (results.hasNext()) {
-    //            System.out.println(results.next().get("abstract").toString());
-    //        }
-    //        ResultSetFormatter.out(results);
 }
