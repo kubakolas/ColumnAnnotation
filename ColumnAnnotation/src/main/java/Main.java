@@ -1,11 +1,15 @@
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
+import org.apache.commons.text.WordUtils;
 import org.apache.jena.query.*;
 import java.io.FileReader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +101,8 @@ public class Main {
         List<String> preprocessedItems = new ArrayList();
 
         for (String item: items) {
-            String newItem = item.replaceAll(" ","_");
+			String newItem = WordUtils.capitalizeFully(item);
+            newItem = newItem.replaceAll(" ","_");
             newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
 
             preprocessedItems.add(newItem);
@@ -131,5 +136,21 @@ public class Main {
             }
         }
         return output;
+    }
+
+ static void temp(Map<String,List<String>> temp){
+            List<String> classList = new ArrayList<>();
+
+        for (List<String> callasses: temp.values()) {
+            classList.addAll(callasses);
+        }
+
+        Map<String, Long> result =
+                classList.stream().collect(
+                        Collectors.groupingBy(
+                                Function.identity(), Collectors.counting()
+                        )
+                );
+        System.out.println(result);
     }
 }
