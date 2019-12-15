@@ -58,7 +58,7 @@ public class Main {
         var preprocessedItems = preprocessItems(columnItems);
         Map<String, List<String>> itemsToClasses = new HashMap();
         for(String item: preprocessedItems) {
-            itemsToClasses.put(item, getResourceClasses(item));
+            itemsToClasses.put(item, getResourceClasses(preprocessedItems.get(0)));
         }
 
         List<String> columnAnnotations = new ArrayList<>();
@@ -90,9 +90,13 @@ public class Main {
         Integer counter = 0;
         while (results.hasNext()) {
             if (counter == 0) {
-                classes.add(results.next().get("class").toString());
+                try {
+                    classes.add(results.next().get("class").toString());
+                } catch(Exception e ) { }
             }
-            classes.add(results.next().get("superclass").toString());
+            try {
+                classes.add(results.next().get("superclass").toString());
+            } catch(Exception e) {}
         }
         return classes;
     }
@@ -101,7 +105,7 @@ public class Main {
         List<String> preprocessedItems = new ArrayList();
 
         for (String item: items) {
-			String newItem = WordUtils.capitalizeFully(item);
+			String newItem = WordUtils.capitalize(item);
             newItem = newItem.replaceAll(" ","_");
             newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
 
