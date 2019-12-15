@@ -88,6 +88,10 @@ public class Main {
         return columnAnnotations;
     }
 
+    static List<String> preprocessItems(List<String> items) {
+
+    }
+
     static List<String> getColumnItems(String tableName, String columnId) {
         String path = "data/" + tableName + ".csv";
         List<String> columnItems = new ArrayList<>();
