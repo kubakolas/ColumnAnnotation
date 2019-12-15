@@ -49,16 +49,8 @@ public class Main {
 
     static List<String> annotateColumn(String tableName, String columnId) {
         List<String> columnItems = getColumnItems(tableName, columnId);
-        List<String> preprocessedItems = new ArrayList();
-
-        for (String item:columnItems) {
-            String newItem = item.replaceAll(" ","_");
-            newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
-
-            preprocessedItems.add(newItem);
-        }
-
-
+        List<String> preprocessedItems = preprocessItems(columnItems);
+        
         ParameterizedSparqlString qs = new ParameterizedSparqlString(""
                 + "PREFIX dbr:     <http://dbpedia.org/resource/>\n"
                 + "PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
@@ -89,7 +81,15 @@ public class Main {
     }
 
     static List<String> preprocessItems(List<String> items) {
+        List<String> preprocessedItems = new ArrayList();
 
+        for (String item: items) {
+            String newItem = item.replaceAll(" ","_");
+            newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
+
+            preprocessedItems.add(newItem);
+        }
+        return preprocessedItems;
     }
 
     static List<String> getColumnItems(String tableName, String columnId) {
