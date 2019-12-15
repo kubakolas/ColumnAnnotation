@@ -49,20 +49,38 @@ public class Main {
 
     static List<String> annotateColumn(String tableName, String columnId) {
         List<String> columnItems = getColumnItems(tableName, columnId);
+        List<String> preprocessedItems = new ArrayList();
+
+        for (String item:columnItems) {
+            String newItem = item.replaceAll(" ","_");
+            newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
+
+            preprocessedItems.add(newItem);
+        }
+
 
         ParameterizedSparqlString qs = new ParameterizedSparqlString(""
                 + "PREFIX dbr:     <http://dbpedia.org/resource/>\n"
                 + "PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
                 + "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>"
                 + "\n"
-                + "SELECT DISTINCT ?c WHERE {\n"
-                + "  dbr:The_Godfather rdf:type ?c.\n"
-                + "  ?x rdfs:subClassOf* ?c.\n"
-                + "  FILTER CONTAINS(?c, \"ontology\")}");
+                + "SELECT DISTINCT ?class ?superclass WHERE {\n"
+                + "dbr:Casablanca a ?class .\n"
+                + "?class rdfs:subClassOf* ?superclass .\n"
+                + "FILTER NOT EXISTS {\n"
+                + "?subclass ^a  dbr:Casablanca ;\n"
+                + "rdfs:subClassOf ?class .\n"
+                + "FILTER ( ?subclass != ?class )\n"
+                + "}.\n"
+                + "FILTER(regex(?class, \"dbpedia.org/ontology\", \"i\")) .\n"
+                + "FILTER(regex(?superclass, \"dbpedia.org/ontology\", \"i\")) .\n"
+                + "FILTER ( ?superclass != ?class )\n"
+                + "}\n");
+
         QueryExecution exec = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", qs.asQuery());
         ResultSet results = exec.execSelect();
         while (results.hasNext()) {
-            System.out.println(results.next().get("c").toString());
+            System.out.println(results.next().get("superclass").toString());
         }
         ResultSetFormatter.out(results);
 
