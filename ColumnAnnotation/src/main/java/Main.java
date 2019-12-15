@@ -14,6 +14,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import static java.util.Map.Entry.comparingByValue;
+import static java.util.stream.Collectors.toMap;
 
 public class Main {
     public static void main(String args[]) throws Exception {
@@ -60,6 +64,8 @@ public class Main {
         for(String item: preprocessedItems) {
             itemsToClasses.put(item, getResourceClasses(item));
         }
+
+        temp(itemsToClasses);
 
         List<String> columnAnnotations = new ArrayList<>();
         return columnAnnotations;
@@ -144,8 +150,8 @@ public class Main {
         return output;
     }
 
- static void temp(Map<String,List<String>> temp){
-            List<String> classList = new ArrayList<>();
+    static void temp(Map<String,List<String>> temp){
+        List<String> classList = new ArrayList<>();
 
         for (List<String> callasses: temp.values()) {
             classList.addAll(callasses);
@@ -157,6 +163,16 @@ public class Main {
                                 Function.identity(), Collectors.counting()
                         )
                 );
-        System.out.println(result);
+
+        Map.Entry<String, Long> maxEntry = null;
+        for (Map.Entry<String, Long> entry : result.entrySet())
+        {
+            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
+            {
+                maxEntry = entry;
+            }
+        }
+        System.out.println(maxEntry);
+
     }
 }
