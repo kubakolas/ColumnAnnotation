@@ -33,7 +33,7 @@ public class Main {
             e.printStackTrace();
         }
         List<List<String>> annotations = new ArrayList<>();
-        for (int i = 0; i < tableNames.size(); i++) {
+        for (int i = 0; i < 1; i++) {
             annotations.add(annotateColumn(tableNames.get(i), columnIds.get(i)));
         }
 
@@ -58,7 +58,7 @@ public class Main {
         var preprocessedItems = preprocessItems(columnItems);
         Map<String, List<String>> itemsToClasses = new HashMap();
         for(String item: preprocessedItems) {
-            itemsToClasses.put(item, getResourceClasses(preprocessedItems.get(0)));
+            itemsToClasses.put(item, getResourceClasses(item));
         }
 
         List<String> columnAnnotations = new ArrayList<>();
@@ -89,13 +89,15 @@ public class Main {
         var classes = new ArrayList<String>();
         Integer counter = 0;
         while (results.hasNext()) {
+            var result = results.next();
             if (counter == 0) {
                 try {
-                    classes.add(results.next().get("class").toString());
+                    classes.add(result.get("class").toString());
                 } catch(Exception e ) { }
+                counter++;
             }
             try {
-                classes.add(results.next().get("superclass").toString());
+                classes.add(result.get("superclass").toString());
             } catch(Exception e) {}
         }
         return classes;
