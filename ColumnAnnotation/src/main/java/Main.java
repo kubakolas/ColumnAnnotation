@@ -14,10 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
-
-import static java.util.Map.Entry.comparingByValue;
-import static java.util.stream.Collectors.toMap;
 
 public class Main {
     public static void main(String args[]) throws Exception {
@@ -36,13 +32,16 @@ public class Main {
         catch (Exception e) {
             e.printStackTrace();
         }
-        List<List<String>> annotations = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {
+        var annotationsNumber = tableNames.size();
+        List<String> annotations = new ArrayList<>();
+        for (int i = 0; i < annotationsNumber; i++) {
+            System.out.print("Annotating " + (i+1) + " column...");
             annotations.add(annotateColumn(tableNames.get(i), columnIds.get(i)));
+            System.out.println(" DONE");
         }
 
         // save annotations to CSV
-
+        System.out.println("Saving results to csv...");
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get("annotations.csv"));
                 CSVWriter csvWriter = new CSVWriter(writer,
@@ -51,13 +50,15 @@ public class Main {
                         CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                         CSVWriter.DEFAULT_LINE_END);
         ) {
-            for (int i = 0; i < tableNames.size(); i++) {
-                csvWriter.writeNext(new String[]{tableNames.get(i), columnIds.get(i), listToString(annotations.get(i))});
+            for (int i = 0; i < annotationsNumber; i++) {
+                csvWriter.writeNext(new String[]{tableNames.get(i), columnIds.get(i), annotations.get(i)});
             }
         }
+        var evaluator = new AnnotationsEvaluator();
+        System.out.printf("%.2f", evaluator.evaluate());
     }
 
-    static List<String> annotateColumn(String tableName, String columnId) {
+    static String annotateColumn(String tableName, String columnId) {
         var columnItems = getColumnItems(tableName, columnId);
         var preprocessedItems = preprocessItems(columnItems);
         Map<String, List<String>> itemsToClasses = new HashMap();
@@ -65,10 +66,57 @@ public class Main {
             itemsToClasses.put(item, getResourceClasses(item));
         }
 
-        temp(itemsToClasses);
 
-        List<String> columnAnnotations = new ArrayList<>();
-        return columnAnnotations;
+        var seriesList = new ArrayList<ClassSeries>();
+        for(var pair: itemsToClasses.entrySet()) {
+            var classes = pair.getValue();
+            for(int i=classes.size()-1; i >=0 ; i--) {
+                var newSeries = classes.subList(i, classes.size());
+                if(!seriesExists(seriesList, newSeries)) {
+                    seriesList.add(new ClassSeries(newSeries));
+                }
+            }
+        }
+        if (seriesList.isEmpty()) {
+            return "";
+        }
+
+
+        Integer allSeriesCounter = 0;
+        for(var series: seriesList) {
+            allSeriesCounter += series.count;
+        }
+
+        seriesList.sort(Comparator.comparing((ClassSeries o) -> o.count).reversed());
+
+        ClassSeries finalSeries = seriesList.get(0);
+        Integer currentSeriesCounter = finalSeries.count;
+        for(int i = 1; i < seriesList.size(); i++) {
+            var nextSeries = seriesList.get(i);
+            if(nextSeries.series.containsAll(finalSeries.series) && nextSeries.count >= (allSeriesCounter-currentSeriesCounter)/3) {
+                finalSeries = nextSeries;
+                currentSeriesCounter += finalSeries.count;
+            }
+        }
+
+        if (finalSeries.series.isEmpty()) {
+            return "";
+        }
+        return finalSeries.series.get(0);
+    }
+
+    public static boolean compareList(List<String> ls1, List<String> ls2){
+        return ls1.toString().contentEquals(ls2.toString());
+    }
+
+    public static boolean seriesExists(final List<ClassSeries> list, final List<String> series){
+        var seriesOptional = list.stream().filter(o -> compareList(o.series, series)).findFirst();
+        if (seriesOptional.isPresent()) {
+            var seriesObj = seriesOptional.get();
+            seriesObj.increaseCounter();
+            return true;
+        }
+        return false;
     }
 
     static List<String> getResourceClasses(String resource) {
@@ -103,7 +151,10 @@ public class Main {
                 counter++;
             }
             try {
-                classes.add(result.get("superclass").toString());
+                var superclass = result.get("superclass").toString();
+                if(!classes.contains(superclass)) {
+                    classes.add(superclass);
+                }
             } catch(Exception e) {}
         }
         return classes;
@@ -115,6 +166,7 @@ public class Main {
         for (String item: items) {
 			String newItem = WordUtils.capitalize(item);
             newItem = newItem.replaceAll(" ","_");
+            newItem = newItem.replaceAll("__","_");
             newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
 
             preprocessedItems.add(newItem);
@@ -150,7 +202,7 @@ public class Main {
         return output;
     }
 
-    static void temp(Map<String,List<String>> temp){
+    static Map<String, Long> calculateClassesCount(Map<String,List<String>> temp) {
         List<String> classList = new ArrayList<>();
 
         for (List<String> callasses: temp.values()) {
@@ -174,5 +226,6 @@ public class Main {
         }
         System.out.println(maxEntry);
 
+        return result;
     }
 }
