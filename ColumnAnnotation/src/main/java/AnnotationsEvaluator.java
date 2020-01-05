@@ -20,7 +20,7 @@ public class AnnotationsEvaluator {
     }
 
 
-    public List<String> getColumnItems(String tableName) {
+    private List<String> getColumnItems(String tableName) {
         String path = tableName + ".csv";
         List<String> columnItems = new ArrayList<>();
         try {
