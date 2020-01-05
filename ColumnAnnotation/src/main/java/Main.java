@@ -7,17 +7,10 @@ import java.io.FileReader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
-
-import static java.util.Map.Entry.comparingByValue;
-import static java.util.stream.Collectors.toMap;
 
 public class Main {
     public static void main(String args[]) throws Exception {
@@ -36,13 +29,18 @@ public class Main {
         catch (Exception e) {
             e.printStackTrace();
         }
-        List<List<String>> annotations = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {
-            annotations.add(annotateColumn(tableNames.get(i), columnIds.get(i)));
+        var annotationsNumber = tableNames.size();
+        List<String> annotations = new ArrayList<>();
+        for (int i = 0; i < annotationsNumber; i++) {
+            System.out.print("Annotating " + (i+1) + " column...");
+            var anotation = annotateColumn(tableNames.get(i), columnIds.get(i));
+            if(anotation != null) { annotations.add(anotation); }
+            else { annotations.add("-1"); }
+            System.out.println("DONE");
         }
 
         // save annotations to CSV
-
+        System.out.println("Saving results to csv...");
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get("annotations.csv"));
                 CSVWriter csvWriter = new CSVWriter(writer,
@@ -51,13 +49,16 @@ public class Main {
                         CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                         CSVWriter.DEFAULT_LINE_END);
         ) {
-            for (int i = 0; i < tableNames.size(); i++) {
-                csvWriter.writeNext(new String[]{tableNames.get(i), columnIds.get(i), listToString(annotations.get(i))});
+            for (int i = 0; i < annotationsNumber; i++) {
+                csvWriter.writeNext(new String[]{tableNames.get(i), columnIds.get(i), annotations.get(i)});
             }
         }
+        var evaluator = new AnnotationsEvaluator();
+        System.out.printf("%.2f", evaluator.evaluate());
     }
 
-    static List<String> annotateColumn(String tableName, String columnId) {
+    // returns annotation for whole column
+    static String annotateColumn(String tableName, String columnId) {
         var columnItems = getColumnItems(tableName, columnId);
         var preprocessedItems = preprocessItems(columnItems);
         Map<String, List<String>> itemsToClasses = new HashMap();
@@ -65,12 +66,47 @@ public class Main {
             itemsToClasses.put(item, getResourceClasses(item));
         }
 
-        temp(itemsToClasses);
+        // here choose algotrithm
+        Annotator annotator = new SeriesBasedAnnotator();
+//        Annotator annotator = new NodeBasedAnnotator();
 
-        List<String> columnAnnotations = new ArrayList<>();
-        return columnAnnotations;
+        return annotator.getAnnotation(itemsToClasses);
     }
 
+    // returns all items from column
+    static List<String> getColumnItems(String tableName, String columnId) {
+        String path = "data/" + tableName + ".csv";
+        List<String> columnItems = new ArrayList<>();
+        try {
+            FileReader filereader = new FileReader(path);
+            CSVReader csvReader = new CSVReaderBuilder(filereader).withSkipLines(1).build();
+            String[] nextRecord;
+            while ((nextRecord = csvReader.readNext()) != null) {
+                columnItems.add(nextRecord[Integer.parseInt(columnId)]);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return columnItems;
+    }
+
+    // returns preprocessed items from column
+    static List<String> preprocessItems(List<String> items) {
+        List<String> preprocessedItems = new ArrayList();
+
+        for (String item: items) {
+            String newItem = WordUtils.capitalize(item);
+            newItem = newItem.replaceAll(" ","_");
+            newItem = newItem.replaceAll("__","_");
+            newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
+
+            preprocessedItems.add(newItem);
+        }
+        return preprocessedItems;
+    }
+
+    // returns all classes for single item from column
     static List<String> getResourceClasses(String resource) {
         ParameterizedSparqlString qs = new ParameterizedSparqlString(""
                 + "PREFIX dbr:     <http://dbpedia.org/resource/>\n"
@@ -103,76 +139,23 @@ public class Main {
                 counter++;
             }
             try {
-                classes.add(result.get("superclass").toString());
+                var superclass = result.get("superclass").toString();
+                if(!classes.contains(superclass)) {
+                    classes.add(superclass);
+                }
             } catch(Exception e) {}
         }
         return classes;
     }
 
-    static List<String> preprocessItems(List<String> items) {
-        List<String> preprocessedItems = new ArrayList();
-
-        for (String item: items) {
-			String newItem = WordUtils.capitalize(item);
-            newItem = newItem.replaceAll(" ","_");
-            newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
-
-            preprocessedItems.add(newItem);
-        }
-        return preprocessedItems;
-    }
-
-    static List<String> getColumnItems(String tableName, String columnId) {
-        String path = "data/" + tableName + ".csv";
-        List<String> columnItems = new ArrayList<>();
-        try {
-            FileReader filereader = new FileReader(path);
-            CSVReader csvReader = new CSVReaderBuilder(filereader).withSkipLines(1).build();
-            String[] nextRecord;
-            while ((nextRecord = csvReader.readNext()) != null) {
-                columnItems.add(nextRecord[Integer.parseInt(columnId)]);
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return columnItems;
-    }
-
-    static String listToString(List<String> list) {
-        String output = "";
-        for (String item : list) {
-            output += item;
-            if (item != list.get(list.size() - 1)) {
-                output += " ";
-            }
-        }
-        return output;
-    }
-
-    static void temp(Map<String,List<String>> temp){
-        List<String> classList = new ArrayList<>();
-
-        for (List<String> callasses: temp.values()) {
-            classList.addAll(callasses);
-        }
-
-        Map<String, Long> result =
-                classList.stream().collect(
-                        Collectors.groupingBy(
-                                Function.identity(), Collectors.counting()
-                        )
-                );
-
-        Map.Entry<String, Long> maxEntry = null;
-        for (Map.Entry<String, Long> entry : result.entrySet())
-        {
-            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
-            {
-                maxEntry = entry;
-            }
-        }
-        System.out.println(maxEntry);
-
-    }
+//    static String listToString(List<String> list) {
+//        String output = "";
+//        for (String item : list) {
+//            output += item;
+//            if (item != list.get(list.size() - 1)) {
+//                output += " ";
+//            }
+//        }
+//        return output;
+//    }
 }
