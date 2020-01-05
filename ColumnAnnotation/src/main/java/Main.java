@@ -2,6 +2,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
 import org.apache.commons.text.WordUtils;
+import org.apache.jena.base.Sys;
 import org.apache.jena.query.*;
 import java.io.FileReader;
 import java.io.Writer;
@@ -14,9 +15,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import static java.util.Map.Entry.comparingByValue;
+import static java.util.stream.Collectors.*;
 
 public class Main {
+    static int a = 1;
     public static void main(String args[]) throws Exception {
+
+        //var evaluator = new evaluate();
+        //System.out.printf("%.2f", evaluator.evaluate());
+
         String path = "task_data.csv";
         List<String> tableNames = new ArrayList<>();
         List<String> columnIds = new ArrayList<>();
@@ -32,16 +42,16 @@ public class Main {
         catch (Exception e) {
             e.printStackTrace();
         }
-        var annotationsNumber = tableNames.size();
         List<String> annotations = new ArrayList<>();
-        for (int i = 0; i < annotationsNumber; i++) {
-            System.out.print("Annotating " + (i+1) + " column...");
-            annotations.add(annotateColumn(tableNames.get(i), columnIds.get(i)));
-            System.out.println(" DONE");
+        for (int i = 0; i < tableNames.size(); i++) {
+            var anotation = annotateColumn(tableNames.get(i), columnIds.get(i));
+            if(anotation != null)
+            {annotations.add(anotation);}
+            else{annotations.add("-1");}
         }
 
         // save annotations to CSV
-        System.out.println("Saving results to csv...");
+
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get("annotations.csv"));
                 CSVWriter csvWriter = new CSVWriter(writer,
@@ -50,12 +60,10 @@ public class Main {
                         CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                         CSVWriter.DEFAULT_LINE_END);
         ) {
-            for (int i = 0; i < annotationsNumber; i++) {
+            for (int i = 0; i < tableNames.size(); i++) {
                 csvWriter.writeNext(new String[]{tableNames.get(i), columnIds.get(i), annotations.get(i)});
             }
         }
-        var evaluator = new AnnotationsEvaluator();
-        System.out.printf("%.2f", evaluator.evaluate());
     }
 
     static String annotateColumn(String tableName, String columnId) {
@@ -66,57 +74,7 @@ public class Main {
             itemsToClasses.put(item, getResourceClasses(item));
         }
 
-
-        var seriesList = new ArrayList<ClassSeries>();
-        for(var pair: itemsToClasses.entrySet()) {
-            var classes = pair.getValue();
-            for(int i=classes.size()-1; i >=0 ; i--) {
-                var newSeries = classes.subList(i, classes.size());
-                if(!seriesExists(seriesList, newSeries)) {
-                    seriesList.add(new ClassSeries(newSeries));
-                }
-            }
-        }
-        if (seriesList.isEmpty()) {
-            return "";
-        }
-
-
-        Integer allSeriesCounter = 0;
-        for(var series: seriesList) {
-            allSeriesCounter += series.count;
-        }
-
-        seriesList.sort(Comparator.comparing((ClassSeries o) -> o.count).reversed());
-
-        ClassSeries finalSeries = seriesList.get(0);
-        Integer currentSeriesCounter = finalSeries.count;
-        for(int i = 1; i < seriesList.size(); i++) {
-            var nextSeries = seriesList.get(i);
-            if(nextSeries.series.containsAll(finalSeries.series) && nextSeries.count >= (allSeriesCounter-currentSeriesCounter)/3) {
-                finalSeries = nextSeries;
-                currentSeriesCounter += finalSeries.count;
-            }
-        }
-
-        if (finalSeries.series.isEmpty()) {
-            return "";
-        }
-        return finalSeries.series.get(0);
-    }
-
-    public static boolean compareList(List<String> ls1, List<String> ls2){
-        return ls1.toString().contentEquals(ls2.toString());
-    }
-
-    public static boolean seriesExists(final List<ClassSeries> list, final List<String> series){
-        var seriesOptional = list.stream().filter(o -> compareList(o.series, series)).findFirst();
-        if (seriesOptional.isPresent()) {
-            var seriesObj = seriesOptional.get();
-            seriesObj.increaseCounter();
-            return true;
-        }
-        return false;
+        return algorithm(itemsToClasses);
     }
 
     static List<String> getResourceClasses(String resource) {
@@ -151,10 +109,7 @@ public class Main {
                 counter++;
             }
             try {
-                var superclass = result.get("superclass").toString();
-                if(!classes.contains(superclass)) {
-                    classes.add(superclass);
-                }
+                classes.add(result.get("superclass").toString());
             } catch(Exception e) {}
         }
         return classes;
@@ -164,7 +119,7 @@ public class Main {
         List<String> preprocessedItems = new ArrayList();
 
         for (String item: items) {
-			String newItem = WordUtils.capitalize(item);
+            String newItem = WordUtils.capitalize(item);
             newItem = newItem.replaceAll(" ","_");
             newItem = newItem.replaceAll("__","_");
             newItem = newItem.replaceAll("[^A-Za-z0-9_]","");
@@ -202,7 +157,84 @@ public class Main {
         return output;
     }
 
-    static Map<String, Long> calculateClassesCount(Map<String,List<String>> temp) {
+    static String algorithm(Map<String,List<String>> itemWithClasses){
+        LinkedHashSet<String> ontologyDict = new LinkedHashSet();
+
+        for (Map.Entry<String,List<String>> dict : itemWithClasses.entrySet()) {
+            for (String ontology : dict.getValue())
+            {
+                ontologyDict.add(ontology);
+            }
+        }
+
+        var nodeList = new ArrayList<Node>();
+
+        var ontologyDictArray = new ArrayList<>(ontologyDict);
+
+        for (Map.Entry<String,List<String>> dict : itemWithClasses.entrySet()) {
+            var ontologyList = dict.getValue();
+            var size = ontologyList.size();
+
+            for (int i = 0; i < size; i++)
+            {
+                Node node = new Node();
+                node.id = ontologyDictArray.indexOf(ontologyList.get(i));
+                if(i+1 < ontologyList.size())
+                {node.idNode = ontologyDictArray.indexOf(ontologyList.get(i+1));}
+                else {node.idNode = -1;}
+
+                node.ontology = ontologyList.get(i);
+
+                nodeList.add(node);
+            }
+            }
+
+        Map<Integer, List<String>> nodesBySubClass = nodeList.stream()
+                .collect(groupingBy(p -> p.idNode, mapping((Node n) -> n.ontology , toList())));
+
+        if(nodesBySubClass.containsKey((int)-1))
+        {nodesBySubClass.remove((int)-1);}
+
+
+        List<String> maxGroup = null;
+        if(nodesBySubClass != null) {
+
+            for (Map.Entry<Integer, List<String>> entry : nodesBySubClass.entrySet()) {
+                if (maxGroup == null || entry.getValue().size() > maxGroup.size()) {
+                    maxGroup = entry.getValue();
+                }
+            }
+
+        }
+        Map<String, Long> ontologyByMaxGroup = null;
+        if(maxGroup != null) {
+             ontologyByMaxGroup =
+                    maxGroup.stream().collect(
+                            groupingBy(
+                                    Function.identity(), Collectors.counting()
+                            )
+                    );
+        }
+
+        Map.Entry<String, Long> maxOntology = null;
+        if(ontologyByMaxGroup != null)
+        {
+            for (Map.Entry<String, Long> entry : ontologyByMaxGroup.entrySet())
+            {
+                if (maxOntology == null || entry.getValue().compareTo(maxOntology.getValue()) > 0)
+                {
+                    maxOntology = entry;
+                }
+            }
+        }
+
+        System.out.print(a++);
+        if(maxOntology != null)
+        {return maxOntology.getKey();}
+        else{return null;}
+    }
+
+    static String temp(Map<String,List<String>> temp){
         List<String> classList = new ArrayList<>();
 
         for (List<String> callasses: temp.values()) {
@@ -211,21 +243,25 @@ public class Main {
 
         Map<String, Long> result =
                 classList.stream().collect(
-                        Collectors.groupingBy(
+                        groupingBy(
                                 Function.identity(), Collectors.counting()
                         )
                 );
 
-        Map.Entry<String, Long> maxEntry = null;
+        Map.Entry<String, Long> maxGroup = null;
         for (Map.Entry<String, Long> entry : result.entrySet())
         {
-            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
+            if (maxGroup == null || entry.getValue().compareTo(maxGroup.getValue()) > 0)
             {
-                maxEntry = entry;
+                maxGroup = entry;
             }
         }
-        System.out.println(maxEntry);
-
-        return result;
+        return maxGroup.getKey();
     }
+}
+
+class Node{
+    int id;
+    int idNode;
+    String ontology;
 }
