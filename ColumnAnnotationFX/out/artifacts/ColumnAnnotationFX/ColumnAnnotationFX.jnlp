@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="ColumnAnnotationFX.jnlp">
+  <information>
+    <title>ColumnAnnotationFX</title>
+    <vendor>Unknown</vendor>
+    <description>ColumnAnnotationFX</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="ColumnAnnotationFX.jar" size="9213" download="eager" />
+  </resources>
+  <jfx:javafx-desc  width="1100" height="600" main-class="sample.Main"  name="ColumnAnnotationFX" />
+  <update check="background"/>
+</jnlp>
