@@ -1,5 +1,5 @@
-/**Klasa reprezentująca powiązania między klasami DBpedii
- * zwróconymi dla danej wartosci komórki adnotowanej kolumny z zapytania SPARQL.
+/** Class that represents connections between class of DBpedia returned from
+ *  SPARQL query, for specific value of column.
  */
 public class Node {
     int id;

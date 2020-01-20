@@ -8,16 +8,18 @@ import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
- * Algorytm przypisujący klasę z DBpedii dla podanych wartości adnotowanej kolumny
+ * Alorithm that annotate class form DBpedia ontology to whole column
  */
-public class NodeBasedAnnotator implements Annotator {
+public class NodeBasedAnnotator {
 
-    /**Algorytm ekspercki którego zadaniem jest:
-     * Stworzenie słownika dla uzyskanych klas. Inicjalizacja węzłów reprezentujących powiązania miedzy klasami i nadklasami.
-     * Grupowanie i zliczeni ilości powiązań. Usuniecie nadklasy "-1". Wybranie klasy z największą liczbą powiązań.
-     * Grupowanie i zliczenie klas powiązanych do najliczniejszej nadklasy. Wyzanczenie na tej podstawie klasy maksymalnej.
-     * @param itemWithClasses słownik z wartościami komórek adnotowanej kolumny i przypisanymi klasami z zapytania SPARQL
-     * @return klasa DBpedii najbardziej pasująca dla wszytskich wartości komórek adnotowanej kolumny
+    /** Function which implements expert algorithm. Steps:
+     *  Creating a dictionary for the classes obtained. Initialization of nodes representing associations between
+     *  classes and superclasses.
+     *  Grouping and counting the number of connections. Delete superclass "-1". Selecting a class with the largest
+     *  number of connections.
+     *  Grouping and counting classes conntected with the most numerous superclass. Completion of max class on this basis.
+     *  @param itemWithClasses dictionary with cell values ​​of the annotated column and assigned classes from the SPARQL query
+     *  @return DBpedia class best suited for all cell values ​​of annotated column
      */
     public String getAnnotation(Map<String, List<String>> itemWithClasses) {
         LinkedHashSet<String> ontologyDict = new LinkedHashSet();

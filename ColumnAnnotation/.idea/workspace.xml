@@ -4,11 +4,10 @@
     <list default="true" id="9490a690-9c13-48b2-a4a4-0bdde85ce1c2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/AnnotationsEvaluator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/AnnotationsEvaluator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ClassSeries.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Annotator.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Node.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/NodeBasedAnnotator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/NodeBasedAnnotator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/SeriesBasedAnnotator.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,6 +102,10 @@
       <screen x="0" y="23" width="1440" height="823" />
     </state>
     <state x="184" y="96" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1440.823@0.23.1440.823" timestamp="1575925904277" />
+    <state x="458" y="204" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1579542958663">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="458" y="204" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1440.900@0.0.1440.900" timestamp="1579542958663" />
     <state x="516" y="144" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1579539795861">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -179,16 +182,5 @@
       <screen x="0" y="23" width="1440" height="823" />
     </state>
     <state x="424" y="335" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD/0.23.1440.823@0.23.1440.823" timestamp="1575924382603" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/NodeBasedAnnotator.java</url>
-          <line>22</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

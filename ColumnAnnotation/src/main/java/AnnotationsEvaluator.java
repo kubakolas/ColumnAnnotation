@@ -7,8 +7,8 @@ import java.util.List;
 
 public class AnnotationsEvaluator {
 
-    /** Metoda sprawdzająca poprawność wyników algorytmu eksperckiego z poprawnymi przyporządkowaniami.
-     * @return procentowy wynik poprawnych adnotacji algorytmu eksperckiego
+    /** A method that checks the compliance of expert algorithm results with the correct assignments.
+     * @return percentage result of the correct annotations of the expert algorithm
      */
     public float evaluate() {
         var gt = getColumnItems("gt");
@@ -23,9 +23,9 @@ public class AnnotationsEvaluator {
     }
 
 
-    /** Metoda czytająca z pliku poprawne przyporządkowanie klasy DBpedii dla zadanej tabeli.
-     * @param tableName nazwa tabeli
-     * @return wartosci komórek z poprawną klasą dla adnotowanej kolumny
+    /** A method that reads ground truth for every column to be annotated.
+     * @param tableName name of file containing table with ground truth
+     * @return ground truth annotations for columns
      */
     private List<String> getColumnItems(String tableName) {
         String path = tableName + ".csv";
