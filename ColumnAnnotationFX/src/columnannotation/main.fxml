@@ -11,17 +11,13 @@
       fx:controller="columnannotation.MainController">
     <children>
         <Label layoutX="34.0" layoutY="32.0" text="ColumnAnnotation"/>
-        <Button fx:id="countFirstButton" layoutX="236.0" layoutY="28.0" mnemonicParsing="false"
-                onMouseClicked="#countFirstOption" prefHeight="25.0" prefWidth="101.0" text="Przelicz #1"/>
+        <Button fx:id="countButton" layoutX="236.0" layoutY="28.0" mnemonicParsing="false"
+                onMouseClicked="#countAgain" prefHeight="25.0" prefWidth="101.0" text="Przelicz"/>
         <ListView fx:id="listView" layoutX="34.0" layoutY="200.0" prefHeight="390.0" prefWidth="202.0"/>
         <Label fx:id="accuracyLabel" layoutX="34.0" layoutY="56.0" text="Accuracy: -"/>
         <TableView fx:id="ontologyTable" layoutX="300.0" layoutY="200.0" prefHeight="390.0" prefWidth="732.0"/>
         <Label fx:id="annotationLabel" layoutX="300.0" layoutY="146.0" text="Annotation: -"/>
-        <Button fx:id="countSecondButton" layoutX="370.0" layoutY="28.0" mnemonicParsing="false"
-                onMouseClicked="#countSecondOption" prefHeight="25.0" prefWidth="101.0" text="Przelicz #2"/>
-        <Button fx:id="displayFirstButton" layoutX="34.0" layoutY="175.0" mnemonicParsing="false"
-                onMouseClicked="#displayFirstOption" prefHeight="25.0" prefWidth="101.0" text="#1"/>
-        <Button fx:id="displaySecondButton" layoutX="135.0" layoutY="175.0" mnemonicParsing="false"
-                onMouseClicked="#displaySecondOption" prefHeight="25.0" prefWidth="101.0" text="#2"/>
+        <Button fx:id="refreshButton" layoutX="34.0" layoutY="175.0" mnemonicParsing="false"
+                onMouseClicked="#refreshTable" prefHeight="25.0" prefWidth="101.0" text="Odśwież"/>
     </children>
 </Pane>

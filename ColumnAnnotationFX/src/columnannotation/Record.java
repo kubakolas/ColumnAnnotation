@@ -3,7 +3,6 @@ package columnannotation;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Record {
-    //Assume each record have 6 elements, all String
 
     private SimpleStringProperty f1, f2, f3, f4, f5, f6, f7, f8;
 

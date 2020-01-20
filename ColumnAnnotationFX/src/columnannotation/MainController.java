@@ -15,25 +15,21 @@ import java.util.ResourceBundle;
 public class MainController implements Initializable {
 
     private final String DELIMITER = ",";
+    private String path = "first";
 
     @FXML
     Label accuracyLabel;
     @FXML
-    Button countFirstButton;
-    @FXML
-    Button countSecondButton;
-    @FXML
-    Button displayFirstButton;
-    @FXML
-    Button displaySecondButton;
+    Button countButton;
     @FXML
     ListView<String> listView;
     @FXML
     TableView<Record> ontologyTable;
     @FXML
     Label annotationLabel;
+    @FXML
+    Button refreshButton;
 
-    private String path = "first";
     private TableUtil tableUtil;
 
     private final TableView<Record> tableView = new TableView<>();
@@ -152,21 +148,11 @@ public class MainController implements Initializable {
         }
     }
 
-    public void countFirstOption() throws IOException {
+    public void countAgain() throws IOException {
         Runtime.getRuntime().exec(new String[]{"cmd", "/K", "Start", "first\\ColumnAnnotation.exe"});
     }
 
-    public void countSecondOption() throws IOException {
-        Runtime.getRuntime().exec(new String[]{"cmd", "/K", "Start", "second\\ColumnAnnotation.exe"});
-    }
-
-    public void displayFirstOption() {
-        path = "first";
-        init();
-    }
-
-    public void displaySecondOption() {
-        path = "second";
+    public void refreshTable() {
         init();
     }
 }
