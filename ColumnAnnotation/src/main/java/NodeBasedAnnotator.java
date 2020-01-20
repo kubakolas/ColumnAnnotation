@@ -7,7 +7,18 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.groupingBy;
 
+/**
+ * Algorytm przypisujący klasę z DBpedii dla podanych wartości adnotowanej kolumny
+ */
 public class NodeBasedAnnotator implements Annotator {
+
+    /**Algorytm ekspercki którego zadaniem jest:
+     * Stworzenie słownika dla uzyskanych klas. Inicjalizacja węzłów reprezentujących powiązania miedzy klasami i nadklasami.
+     * Grupowanie i zliczeni ilości powiązań. Usuniecie nadklasy "-1". Wybranie klasy z największą liczbą powiązań.
+     * Grupowanie i zliczenie klas powiązanych do najliczniejszej nadklasy. Wyzanczenie na tej podstawie klasy maksymalnej.
+     * @param itemWithClasses słownik z wartościami komórek adnotowanej kolumny i przypisanymi klasami z zapytania SPARQL
+     * @return klasa DBpedii najbardziej pasująca dla wszytskich wartości komórek adnotowanej kolumny
+     */
     public String getAnnotation(Map<String, List<String>> itemWithClasses) {
         LinkedHashSet<String> ontologyDict = new LinkedHashSet();
 

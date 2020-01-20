@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
+    /** Główna funkcja aplikacji. Pobierająca dane o adnotowanyh kolumnach wraz z ich zawartością.
+     * Uruchamiająca adnotację, zapisująca wyniki do pliku.
+     * Rozpoczynająca proces porównywania uzyskanych wyników ze zbiorem poprwanych przyporządkowań.
+     */
     public static void main(String args[]) throws Exception {
         String path = "task_data.csv";
         List<String> tableNames = new ArrayList<>();
@@ -57,7 +61,12 @@ public class Main {
         System.out.printf("%.2f", evaluator.evaluate());
     }
 
-    // returns annotation for whole column
+
+    /** Funkcja obsługująca wywołanie metody algorytmu eksperckiego.
+     * @param tableName nazwa tabeli
+     * @param columnId indeks adnotowanej kolumny
+     * @return przypisana klasa DBpedii dla wszytskich wartosci kolumny
+     */
     static String annotateColumn(String tableName, String columnId) {
         var columnItems = getColumnItems(tableName, columnId);
         var preprocessedItems = preprocessItems(columnItems);
@@ -67,13 +76,17 @@ public class Main {
         }
 
         // here choose algotrithm
-        Annotator annotator = new SeriesBasedAnnotator();
-//        Annotator annotator = new NodeBasedAnnotator();
+        Annotator annotator = new NodeBasedAnnotator();
 
         return annotator.getAnnotation(itemsToClasses);
     }
 
-    // returns all items from column
+
+    /** Funkcja pozwaljąca na uzyskanie wartości komórek adnotowanej columny.
+     * @param tableName nazwa tabeli
+     * @param columnId indeks adnotowanej kolumny
+     * @return wartosci adnotowanej tabeli w postaci listy
+     */
     static List<String> getColumnItems(String tableName, String columnId) {
         String path = "data/" + tableName + ".csv";
         List<String> columnItems = new ArrayList<>();
@@ -91,7 +104,13 @@ public class Main {
         return columnItems;
     }
 
-    // returns preprocessed items from column
+
+    /** Preprocesing wartości komórek do postaci akceptowalnej w zapytaniu SPARQL.
+     * Usunięcie znaków poza alfanumerycznymi, zastąpienie spacji oraz "__" podkreśleniem,
+     * ustawienie kapitalików.
+     * @param items lista wartosci adnotowanej kolumny
+     * @return lista wartosci adnotowanej kolumny po preprocesingu
+     */
     static List<String> preprocessItems(List<String> items) {
         List<String> preprocessedItems = new ArrayList();
 
@@ -106,7 +125,12 @@ public class Main {
         return preprocessedItems;
     }
 
-    // returns all classes for single item from column
+
+    /** Funkcja wykonująca zapytanie SPARQL do zasobów BDpediina dla wartości komórki adnotowanej kolumny.
+     * Przekształca uzyskaną odpowiedź na listę klas DBpedii.
+     * @param resource pojedyńcza wartość adnotowanej kolumny
+     * @return lista odnalezionych klas i nadklas DBpedii przy użyciu SPARQL
+     */
     static List<String> getResourceClasses(String resource) {
         ParameterizedSparqlString qs = new ParameterizedSparqlString(""
                 + "PREFIX dbr:     <http://dbpedia.org/resource/>\n"
@@ -146,15 +170,4 @@ public class Main {
         }
         return classes;
     }
-
-//    static String listToString(List<String> list) {
-//        String output = "";
-//        for (String item : list) {
-//            output += item;
-//            if (item != list.get(list.size() - 1)) {
-//                output += " ";
-//            }
-//        }
-//        return output;
-//    }
 }
